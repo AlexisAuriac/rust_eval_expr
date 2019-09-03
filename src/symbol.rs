@@ -55,6 +55,27 @@ fn get_symbol_nbr(s: &String) -> Result<(LexSym, GramSym, usize), String> {
     return Ok((LexSym::TsNbr(nb), GramSym::TsNbr, size));
 }
 
+fn get_sub_or_add_symbol(s: &String) -> Result<(LexSym, GramSym, usize), String> {
+    let mut addition = true;
+    let mut size = 0;
+
+    for c in s.chars() {
+        match c {
+            '+' => {}
+            '-' => addition = !addition,
+            _ => break,
+        };
+
+        size += 1;
+    }
+
+    if addition {
+        return Ok((LexSym::TsPlus, GramSym::TsPlus, size));
+    } else {
+        return Ok((LexSym::TsLess, GramSym::TsLess, size));
+    }
+}
+
 pub fn get_symbol(s: &String) -> Result<(LexSym, GramSym, usize), String> {
     if s.len() == 0 {
         return Ok((LexSym::TsEos, GramSym::TsEos, 0));
@@ -65,8 +86,7 @@ pub fn get_symbol(s: &String) -> Result<(LexSym, GramSym, usize), String> {
     return match c {
         '(' => Ok((LexSym::TsLBracket, GramSym::TsLBracket, 1)),
         ')' => Ok((LexSym::TsRBracket, GramSym::TsRBracket, 1)),
-        '+' => Ok((LexSym::TsPlus, GramSym::TsPlus, 1)),
-        '-' => Ok((LexSym::TsLess, GramSym::TsLess, 1)),
+        '+' | '-' => get_sub_or_add_symbol(s),
         '*' => Ok((LexSym::TsTimes, GramSym::TsTimes, 1)),
         '/' => Ok((LexSym::TsDivide, GramSym::TsDivide, 1)),
         '%' => Ok((LexSym::TsModulo, GramSym::TsModulo, 1)),

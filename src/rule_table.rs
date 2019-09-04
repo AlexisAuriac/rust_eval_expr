@@ -46,6 +46,11 @@ pub fn get_rt() -> RuleTable<GramSym> {
                 GramSym::TsModulo,
                 vec![(GramSym::NtsExpr, false)],
             ),
+            Rule::new(
+                GramSym::NtsSign,
+                GramSym::TsPower,
+                vec![(GramSym::NtsExpr, false)],
+            ),
         ],
     );
 }

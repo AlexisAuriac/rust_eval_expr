@@ -7,6 +7,7 @@ pub enum LexSym {
     TsTimes,
     TsDivide,
     TsModulo,
+    TsPower,
     TsNbr(u32),
     TsEos,
     TsInvalid,
@@ -21,6 +22,7 @@ pub enum GramSym {
     TsTimes,
     TsDivide,
     TsModulo,
+    TsPower,
     TsNbr,
     TsEos,
     TsInvalid,
@@ -105,6 +107,7 @@ pub fn get_symbol(s: &str) -> Result<(LexSym, GramSym, usize), String> {
         '*' => (LexSym::TsTimes, GramSym::TsTimes, 1),
         '/' => (LexSym::TsDivide, GramSym::TsDivide, 1),
         '%' => (LexSym::TsModulo, GramSym::TsModulo, 1),
+        '^' => (LexSym::TsPower, GramSym::TsPower, 1),
         '0'...'9' => get_symbol_nbr(&s[nb_spaces..])?,
         _ => (LexSym::TsInvalid, GramSym::TsInvalid, 1),
     };

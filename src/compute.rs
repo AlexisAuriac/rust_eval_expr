@@ -28,6 +28,11 @@ pub fn compute(parsed: &Node) -> i32 {
             left,
             right,
         }) => compute(left) % compute(right),
+        Node::Op(NodeOp {
+            op: LexSym::TsPower,
+            left,
+            right,
+        }) => compute(left).pow(compute(right) as u32),
         Node::Value(NodeValue { val }) => *val as i32,
         _ => unimplemented!(),
     };

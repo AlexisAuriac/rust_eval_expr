@@ -32,8 +32,31 @@ fn parse_node(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     };
 }
 
-fn parse_high_prior_op(lexed: &[LexSym]) -> (Node, &[LexSym]) {
+fn parse_power(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     let (left, mut lexed) = parse_node(lexed);
+
+    if lexed.len() == 0 {
+        return (left, lexed);
+    }
+
+    return match lexed[0] {
+        LexSym::TsPower => {
+            let op = lexed[0];
+
+            lexed = &lexed[1..];
+
+            let (right, lexed) = parse_power(lexed);
+
+            let root = Node::Op(NodeOp::new(op, left, right));
+
+            (root, lexed)
+        }
+        _ => (left, lexed),
+    };
+}
+
+fn parse_high_prior_op(lexed: &[LexSym]) -> (Node, &[LexSym]) {
+    let (left, mut lexed) = parse_power(lexed);
 
     if lexed.len() == 0 {
         return (left, lexed);

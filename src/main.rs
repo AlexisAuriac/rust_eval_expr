@@ -17,10 +17,9 @@ fn get_arg() -> String {
     return args.remove(1);
 }
 
-// #[derive(Debug)]
 enum Node {
     Value(NodeValue),
-    MinorOp(NodeMinorOp),
+    Op(NodeOp),
 }
 
 struct NodeValue {
@@ -33,27 +32,19 @@ impl NodeValue {
     }
 }
 
-struct NodeMinorOp {
+struct NodeOp {
     op: LexSym,
-    left: Option<Box<Node>>,
-    right: Option<Box<Node>>,
+    left: Box<Node>,
+    right: Box<Node>,
 }
 
-impl NodeMinorOp {
-    fn new(op: LexSym, left: Option<Node>, right: Option<Node>) -> NodeMinorOp {
-        let left = if let Some(node) = left {
-            Some(Box::new(node))
-        } else {
-            None
+impl NodeOp {
+    fn new(op: LexSym, left: Node, right: Node) -> NodeOp {
+        return NodeOp {
+            op,
+            left: Box::new(left),
+            right: Box::new(right),
         };
-
-        let right = if let Some(node) = right {
-            Some(Box::new(node))
-        } else {
-            None
-        };
-
-        return NodeMinorOp { op, left, right };
     }
 }
 
@@ -68,29 +59,17 @@ fn print_node_value(node: &NodeValue, prof: u32) {
     println!("{}", node.val);
 }
 
-fn print_node_op(node: &NodeMinorOp, prof: u32) {
-    if let Some(left) = &node.left {
-        print_node(&left, prof + 1);
-    } else {
-        print_node_prof(prof + 1);
-        println!("NULL");
-    }
-
+fn print_node_op(node: &NodeOp, prof: u32) {
+    print_node(&node.left, prof + 1);
     print_node_prof(prof);
     println!("{:?}", node.op);
-
-    if let Some(right) = &node.right {
-        print_node(&right, prof + 1);
-    } else {
-        print_node_prof(prof + 1);
-        println!("NULL");
-    }
+    print_node(&node.right, prof + 1);
 }
 
 fn print_node(node: &Node, prof: u32) {
     match node {
         Node::Value(val) => print_node_value(val, prof),
-        Node::MinorOp(op) => print_node_op(op, prof),
+        Node::Op(op) => print_node_op(op, prof),
     }
 }
 
@@ -128,7 +107,30 @@ fn parse_node(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     return match lexed[0] {
         LexSym::TsNbr(n) => (Node::Value(NodeValue::new(n)), &lexed[1..]),
         LexSym::TsLBracket => parse_node_bracket(lexed),
-        _ => (Node::Value(NodeValue::new(0)), &lexed[1..]),
+        _ => unimplemented!(),
+    };
+}
+
+fn parse_high_prior_op(lexed: &[LexSym]) -> Option<(Node, &[LexSym])> {
+    let (left, mut lexed) = parse_node(lexed);
+
+    if lexed.len() == 0 {
+        return Some((left, lexed));
+    }
+
+    return match lexed[0] {
+        LexSym::TsTimes | LexSym::TsDivide | LexSym::TsModulo => {
+            let op = lexed[0];
+
+            lexed = &lexed[1..];
+
+            let (right, lexed) = parse_high_prior_op(lexed).unwrap();
+
+            let root = Node::Op(NodeOp::new(op, left, right));
+
+            Some((root, lexed))
+        }
+        _ => Some((left, lexed)),
     };
 }
 
@@ -137,25 +139,19 @@ fn parse_expr(lexed: &[LexSym]) -> Option<(Node, &[LexSym])> {
         return None;
     }
 
-    let (left, mut lexed) = parse_node(lexed);
+    let (left, mut lexed) = parse_high_prior_op(lexed)?;
 
     if lexed.len() == 0 {
         return Some((left, lexed));
     }
 
-    // match lexed[0] {
-    // LexSym::TsPlus | LexSym::TsLess => {
     let op = lexed[0];
 
     lexed = &lexed[1..];
 
     let (right, lexed) = parse_expr(lexed).unwrap();
 
-    let root = Node::MinorOp(NodeMinorOp::new(op, Some(left), Some(right)));
-    // }
-    // Some(_) => return Err("qwer".to_string()),
-    // None => return Ok(left),
-    // }
+    let root = Node::Op(NodeOp::new(op, left, right));
 
     return Some((root, lexed));
 }
@@ -165,6 +161,12 @@ fn parse(lexed: &Vec<LexSym>) -> Option<Node> {
 
     return Some(parsed);
 }
+
+// fn compute(parsed: &Node) -> i32 {
+//     return match parsed {
+//         Node::Op(NodeOp{LexSym::TsPlus, left, right}) => compute(left) + compute(right),
+//     };
+// }
 
 fn main() {
     let lexed = lexer(get_arg(), get_rt(), &get_symbol);

@@ -21,9 +21,10 @@ fn get_arg() -> String {
     return args.remove(1);
 }
 
-fn main() {
-    let lexed = lexer(get_arg(), get_rt(), &get_symbol);
-    let parsed = parse(&lexed.unwrap()).unwrap();
+fn main() -> Result<(), String> {
+    let lexed = lexer(get_arg(), get_rt(), &get_symbol)?;
+    let parsed = parse(&lexed).unwrap();
 
     println!("{:?}", compute(&parsed));
+    Ok(())
 }

@@ -162,15 +162,42 @@ fn parse(lexed: &Vec<LexSym>) -> Option<Node> {
     return Some(parsed);
 }
 
-// fn compute(parsed: &Node) -> i32 {
-//     return match parsed {
-//         Node::Op(NodeOp{LexSym::TsPlus, left, right}) => compute(left) + compute(right),
-//     };
-// }
+fn compute(parsed: &Node) -> i32 {
+    return match parsed {
+        Node::Op(NodeOp {
+            op: LexSym::TsPlus,
+            left,
+            right,
+        }) => compute(left) + compute(right),
+        Node::Op(NodeOp {
+            op: LexSym::TsLess,
+            left,
+            right,
+        }) => compute(left) - compute(right),
+        Node::Op(NodeOp {
+            op: LexSym::TsTimes,
+            left,
+            right,
+        }) => compute(left) * compute(right),
+        Node::Op(NodeOp {
+            op: LexSym::TsDivide,
+            left,
+            right,
+        }) => compute(left) / compute(right),
+        Node::Op(NodeOp {
+            op: LexSym::TsModulo,
+            left,
+            right,
+        }) => compute(left) % compute(right),
+        Node::Value(NodeValue { val }) => *val as i32,
+        _ => unimplemented!(),
+    };
+}
 
 fn main() {
     let lexed = lexer(get_arg(), get_rt(), &get_symbol);
-    let parsed = parse(&lexed.unwrap());
+    let parsed = parse(&lexed.unwrap()).unwrap();
 
-    println!("{:?}", parsed.unwrap());
+    // println!("{:?}", parsed.unwrap());
+    println!("{:?}", compute(&parsed));
 }

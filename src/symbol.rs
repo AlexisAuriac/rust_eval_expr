@@ -128,7 +128,7 @@ pub fn get_symbol(s: &str) -> Result<(LexSym, GramSym, usize), String> {
         '{' => (LexSym::TsLBracket3, GramSym::TsLBracket3, 1),
         '}' => (LexSym::TsRBracket3, GramSym::TsRBracket3, 1),
         '+' | '-' => get_sub_or_add_symbol(&s[nb_spaces..])?,
-        '*' => (LexSym::TsTimes, GramSym::TsTimes, 1),
+        '*' | '.' => (LexSym::TsTimes, GramSym::TsTimes, 1),
         '/' => (LexSym::TsDivide, GramSym::TsDivide, 1),
         '%' => (LexSym::TsModulo, GramSym::TsModulo, 1),
         '^' => (LexSym::TsPower, GramSym::TsPower, 1),

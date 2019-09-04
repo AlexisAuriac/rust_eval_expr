@@ -81,7 +81,7 @@ fn parse_node_bracket(lexed: &[LexSym]) -> (Node, &[LexSym]) {
         pos_r_bracket += 1;
     }
 
-    let (content, _) = parse_expr(&lexed[1..pos_r_bracket]).unwrap();
+    let (content, _) = parse_expr(&lexed[1..pos_r_bracket]);
 
     return (content, &lexed[pos_r_bracket + 1..]);
 }
@@ -94,11 +94,11 @@ fn parse_node(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     };
 }
 
-fn parse_high_prior_op(lexed: &[LexSym]) -> Option<(Node, &[LexSym])> {
+fn parse_high_prior_op(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     let (left, mut lexed) = parse_node(lexed);
 
     if lexed.len() == 0 {
-        return Some((left, lexed));
+        return (left, lexed);
     }
 
     return match lexed[0] {
@@ -107,40 +107,36 @@ fn parse_high_prior_op(lexed: &[LexSym]) -> Option<(Node, &[LexSym])> {
 
             lexed = &lexed[1..];
 
-            let (right, lexed) = parse_high_prior_op(lexed).unwrap();
+            let (right, lexed) = parse_high_prior_op(lexed);
 
             let root = Node::Op(NodeOp::new(op, left, right));
 
-            Some((root, lexed))
+            (root, lexed)
         }
-        _ => Some((left, lexed)),
+        _ => (left, lexed),
     };
 }
 
-fn parse_expr(lexed: &[LexSym]) -> Option<(Node, &[LexSym])> {
-    if lexed.len() == 0 {
-        return None;
-    }
-
-    let (left, mut lexed) = parse_high_prior_op(lexed)?;
+fn parse_expr(lexed: &[LexSym]) -> (Node, &[LexSym]) {
+    let (left, mut lexed) = parse_high_prior_op(lexed);
 
     if lexed.len() == 0 {
-        return Some((left, lexed));
+        return (left, lexed);
     }
 
     let op = lexed[0];
 
     lexed = &lexed[1..];
 
-    let (right, lexed) = parse_expr(lexed).unwrap();
+    let (right, lexed) = parse_expr(lexed);
 
     let root = Node::Op(NodeOp::new(op, left, right));
 
-    return Some((root, lexed));
+    return (root, lexed);
 }
 
-pub fn parse(lexed: &Vec<LexSym>) -> Option<Node> {
-    let (parsed, _) = parse_expr(&lexed[..])?;
+pub fn parse(lexed: &Vec<LexSym>) -> Node {
+    let (parsed, _) = parse_expr(&lexed[..]);
 
-    return Some(parsed);
+    return parsed;
 }

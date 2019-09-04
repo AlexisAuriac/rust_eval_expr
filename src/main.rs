@@ -23,7 +23,7 @@ fn get_arg() -> String {
 
 fn main() -> Result<(), String> {
     let lexed = lexer(get_arg(), get_rt(), &get_symbol)?;
-    let parsed = parse(&lexed).unwrap();
+    let parsed = parse(&lexed);
 
     println!("{:?}", compute(&parsed));
     Ok(())

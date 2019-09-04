@@ -11,19 +11,18 @@ use parse::parse;
 use rule_table::get_rt;
 use symbol::get_symbol;
 
-fn get_arg() -> String {
+fn get_arg() -> Result<String, String> {
     let mut args: Vec<String> = std::env::args().collect();
 
     if args.len() == 1 {
-        eprintln!("usage:\texpr");
-        std::process::exit(1);
+        return Err(String::from("Give an expression as argument"));
     }
 
-    return args.remove(1);
+    return Ok(args.remove(1));
 }
 
 fn main() -> Result<(), String> {
-    let lexed = lexer(get_arg(), get_rt(), &get_symbol)?;
+    let lexed = lexer(get_arg()?, get_rt(), &get_symbol)?;
     let parsed = parse(&lexed);
 
     println!("{:?}", compute(&parsed));

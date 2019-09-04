@@ -21,7 +21,6 @@ fn get_arg() -> String {
 enum Node {
     Value(NodeValue),
     MinorOp(NodeMinorOp),
-    Bracket(NodeBracket),
 }
 
 struct NodeValue {
@@ -58,18 +57,6 @@ impl NodeMinorOp {
     }
 }
 
-struct NodeBracket {
-    content: Box<Node>,
-}
-
-impl NodeBracket {
-    fn new(content: Node) -> NodeBracket {
-        return NodeBracket {
-            content: Box::new(content),
-        };
-    }
-}
-
 fn print_node_prof(prof: u32) {
     for _ in 0..prof {
         print!("\t");
@@ -100,18 +87,10 @@ fn print_node_op(node: &NodeMinorOp, prof: u32) {
     }
 }
 
-fn print_node_bracket(node: &NodeBracket, prof: u32) {
-    print_node_prof(prof);
-    println!("()");
-
-    print_node(&node.content, prof + 1);
-}
-
 fn print_node(node: &Node, prof: u32) {
     match node {
         Node::Value(val) => print_node_value(val, prof),
         Node::MinorOp(op) => print_node_op(op, prof),
-        Node::Bracket(bracket) => print_node_bracket(bracket, prof),
     }
 }
 
@@ -142,10 +121,7 @@ fn parse_node_bracket(lexed: &[LexSym]) -> (Node, &[LexSym]) {
 
     let (content, _) = parse_expr(&lexed[1..pos_r_bracket]).unwrap();
 
-    return (
-        Node::Bracket(NodeBracket::new(content)),
-        &lexed[pos_r_bracket + 1..],
-    );
+    return (content, &lexed[pos_r_bracket + 1..]);
 }
 
 fn parse_node(lexed: &[LexSym]) -> (Node, &[LexSym]) {

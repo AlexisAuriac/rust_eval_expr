@@ -1,7 +1,11 @@
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum LexSym {
-    TsLBracket,
-    TsRBracket,
+    TsLBracket1,
+    TsRBracket1,
+    TsLBracket2,
+    TsRBracket2,
+    TsLBracket3,
+    TsRBracket3,
     TsPlus,
     TsLess,
     TsTimes,
@@ -15,8 +19,12 @@ pub enum LexSym {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum GramSym {
-    TsLBracket,
-    TsRBracket,
+    TsLBracket1,
+    TsRBracket1,
+    TsLBracket2,
+    TsRBracket2,
+    TsLBracket3,
+    TsRBracket3,
     TsPlus,
     TsLess,
     TsTimes,
@@ -28,6 +36,18 @@ pub enum GramSym {
     TsInvalid,
     NtsExpr,
     NtsSign,
+}
+
+pub fn get_opposite_bracket(br: LexSym) -> Result<LexSym, String> {
+    return match br {
+        LexSym::TsLBracket1 => Ok(LexSym::TsRBracket1),
+        LexSym::TsRBracket1 => Ok(LexSym::TsLBracket1),
+        LexSym::TsLBracket2 => Ok(LexSym::TsRBracket2),
+        LexSym::TsRBracket2 => Ok(LexSym::TsLBracket2),
+        LexSym::TsLBracket3 => Ok(LexSym::TsRBracket3),
+        LexSym::TsRBracket3 => Ok(LexSym::TsLBracket3),
+        _ => Err(String::from("Symbol is not a bracket")),
+    };
 }
 
 fn get_nb_spaces(s: &str) -> usize {
@@ -101,8 +121,12 @@ pub fn get_symbol(s: &str) -> Result<(LexSym, GramSym, usize), String> {
     let c = s.chars().nth(nb_spaces).unwrap();
 
     let (lex, gram, size) = match c {
-        '(' => (LexSym::TsLBracket, GramSym::TsLBracket, 1),
-        ')' => (LexSym::TsRBracket, GramSym::TsRBracket, 1),
+        '(' => (LexSym::TsLBracket1, GramSym::TsLBracket1, 1),
+        ')' => (LexSym::TsRBracket1, GramSym::TsRBracket1, 1),
+        '[' => (LexSym::TsLBracket2, GramSym::TsLBracket2, 1),
+        ']' => (LexSym::TsRBracket2, GramSym::TsRBracket2, 1),
+        '{' => (LexSym::TsLBracket3, GramSym::TsLBracket3, 1),
+        '}' => (LexSym::TsRBracket3, GramSym::TsRBracket3, 1),
         '+' | '-' => get_sub_or_add_symbol(&s[nb_spaces..])?,
         '*' => (LexSym::TsTimes, GramSym::TsTimes, 1),
         '/' => (LexSym::TsDivide, GramSym::TsDivide, 1),

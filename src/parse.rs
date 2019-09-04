@@ -1,18 +1,20 @@
 use crate::node::{Node, NodeOp, NodeValue};
-use crate::symbol::LexSym;
+use crate::symbol::{get_opposite_bracket, LexSym};
 
 fn parse_node_bracket(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     let mut opened_bracket = 0;
     let mut pos_r_bracket = 0;
+    let l_brack = lexed[0];
+    let r_brack = get_opposite_bracket(lexed[0]).unwrap();
 
     for i in lexed.iter() {
-        if *i == LexSym::TsRBracket {
+        if *i == r_brack {
             if opened_bracket == 1 {
                 break;
             } else {
                 opened_bracket -= 1;
             }
-        } else if *i == LexSym::TsLBracket {
+        } else if *i == l_brack {
             opened_bracket += 1;
         }
 
@@ -27,7 +29,9 @@ fn parse_node_bracket(lexed: &[LexSym]) -> (Node, &[LexSym]) {
 fn parse_node(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     return match lexed[0] {
         LexSym::TsNbr(n) => (Node::Value(NodeValue::new(n)), &lexed[1..]),
-        LexSym::TsLBracket => parse_node_bracket(lexed),
+        LexSym::TsLBracket1 | LexSym::TsLBracket2 | LexSym::TsLBracket3 => {
+            parse_node_bracket(lexed)
+        }
         _ => unimplemented!(),
     };
 }

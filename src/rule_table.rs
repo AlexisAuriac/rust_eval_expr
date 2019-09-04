@@ -14,10 +14,28 @@ pub fn get_rt() -> RuleTable<GramSym> {
             ),
             Rule::new(
                 GramSym::NtsExpr,
-                GramSym::TsLBracket,
+                GramSym::TsLBracket1,
                 vec![
                     (GramSym::NtsExpr, false),
-                    (GramSym::TsRBracket, false),
+                    (GramSym::TsRBracket1, false),
+                    (GramSym::NtsSign, true),
+                ],
+            ),
+            Rule::new(
+                GramSym::NtsExpr,
+                GramSym::TsLBracket2,
+                vec![
+                    (GramSym::NtsExpr, false),
+                    (GramSym::TsRBracket2, false),
+                    (GramSym::NtsSign, true),
+                ],
+            ),
+            Rule::new(
+                GramSym::NtsExpr,
+                GramSym::TsLBracket3,
+                vec![
+                    (GramSym::NtsExpr, false),
+                    (GramSym::TsRBracket3, false),
                     (GramSym::NtsSign, true),
                 ],
             ),

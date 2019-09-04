@@ -1,4 +1,4 @@
-use crate::parse::{Node, NodeOp, NodeValue};
+use crate::node::{Node, NodeOp, NodeValue};
 use crate::symbol::LexSym;
 
 pub fn compute(parsed: &Node) -> i32 {

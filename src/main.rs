@@ -20,7 +20,7 @@ fn get_arg() -> String {
 // #[derive(Debug)]
 enum Node {
     Value(NodeValue),
-    Op(NodeOp),
+    MinorOp(NodeMinorOp),
     Bracket(NodeBracket),
 }
 
@@ -34,14 +34,14 @@ impl NodeValue {
     }
 }
 
-struct NodeOp {
+struct NodeMinorOp {
     op: LexSym,
     left: Option<Box<Node>>,
     right: Option<Box<Node>>,
 }
 
-impl NodeOp {
-    fn new(op: LexSym, left: Option<Node>, right: Option<Node>) -> NodeOp {
+impl NodeMinorOp {
+    fn new(op: LexSym, left: Option<Node>, right: Option<Node>) -> NodeMinorOp {
         let left = if let Some(node) = left {
             Some(Box::new(node))
         } else {
@@ -54,7 +54,7 @@ impl NodeOp {
             None
         };
 
-        return NodeOp { op, left, right };
+        return NodeMinorOp { op, left, right };
     }
 }
 
@@ -81,7 +81,7 @@ fn print_node_value(node: &NodeValue, prof: u32) {
     println!("{}", node.val);
 }
 
-fn print_node_op(node: &NodeOp, prof: u32) {
+fn print_node_op(node: &NodeMinorOp, prof: u32) {
     if let Some(left) = &node.left {
         print_node(&left, prof + 1);
     } else {
@@ -110,7 +110,7 @@ fn print_node_bracket(node: &NodeBracket, prof: u32) {
 fn print_node(node: &Node, prof: u32) {
     match node {
         Node::Value(val) => print_node_value(val, prof),
-        Node::Op(op) => print_node_op(op, prof),
+        Node::MinorOp(op) => print_node_op(op, prof),
         Node::Bracket(bracket) => print_node_bracket(bracket, prof),
     }
 }
@@ -123,11 +123,18 @@ impl std::fmt::Debug for Node {
 }
 
 fn parse_node_bracket(lexed: &[LexSym]) -> (Node, &[LexSym]) {
+    let mut opened_bracket = 0;
     let mut pos_r_bracket = 0;
 
     for i in lexed.iter() {
         if *i == LexSym::TsRBracket {
-            break;
+            if opened_bracket == 1 {
+                break;
+            } else {
+                opened_bracket -= 1;
+            }
+        } else if *i == LexSym::TsLBracket {
+            opened_bracket += 1;
         }
 
         pos_r_bracket += 1;
@@ -168,7 +175,7 @@ fn parse_expr(lexed: &[LexSym]) -> Option<(Node, &[LexSym])> {
 
     let (right, lexed) = parse_expr(lexed).unwrap();
 
-    let root = Node::Op(NodeOp::new(op, Some(left), Some(right)));
+    let root = Node::MinorOp(NodeMinorOp::new(op, Some(left), Some(right)));
     // }
     // Some(_) => return Err("qwer".to_string()),
     // None => return Ok(left),

@@ -100,8 +100,37 @@ fn parse_expr(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     return (root, lexed);
 }
 
+fn clear_sub(node: Node, prev_is_less: bool) -> Node {
+    match node {
+        Node::Value(n) => Node::Value(n),
+        Node::Op(NodeOp {
+            op: LexSym::TsLess,
+            left,
+            right,
+        }) => {
+            return if prev_is_less {
+                let left = clear_sub(*left, false);
+                let right = clear_sub(*right, false);
+
+                Node::Op(NodeOp::new(LexSym::TsPlus, left, right))
+            } else {
+                let left = clear_sub(*left, true);
+                let right = clear_sub(*right, true);
+
+                Node::Op(NodeOp::new(LexSym::TsLess, left, right))
+            }
+        }
+        Node::Op(NodeOp { op, left, right }) => {
+            let left = clear_sub(*left, false);
+            let right = clear_sub(*right, false);
+
+            Node::Op(NodeOp::new(op, left, right))
+        }
+    }
+}
+
 pub fn parse(lexed: &Vec<LexSym>) -> Node {
     let (parsed, _) = parse_expr(&lexed[..]);
 
-    return parsed;
+    return clear_sub(parsed, false);
 }

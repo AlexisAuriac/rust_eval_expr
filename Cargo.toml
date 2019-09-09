@@ -5,4 +5,4 @@ authors = ["alexis <alexis.auriac@epitech.eu>"]
 edition = "2018"
 
 [dependencies]
-ll_lexer = { path = "../ll_lexer" }
+ll_lexer = { git = "https://github.com/AlexisAuriac/rust_ll_lexer.git" }

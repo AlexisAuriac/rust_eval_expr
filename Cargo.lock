@@ -4,10 +4,13 @@
 name = "eval_expr"
 version = "0.1.0"
 dependencies = [
- "ll_lexer 0.1.0",
+ "ll_lexer 0.1.0 (git+https://github.com/AlexisAuriac/rust_ll_lexer.git)",
 ]
 
 [[package]]
 name = "ll_lexer"
 version = "0.1.0"
+source = "git+https://github.com/AlexisAuriac/rust_ll_lexer.git#1865f5eddf9d7ff659ce46de7d2c0cb141a3d326"
 
+[metadata]
+"checksum ll_lexer 0.1.0 (git+https://github.com/AlexisAuriac/rust_ll_lexer.git)" = "<none>"

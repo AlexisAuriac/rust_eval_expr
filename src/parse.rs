@@ -1,6 +1,13 @@
 use crate::node::{Node, NodeOp, NodeValue};
 use crate::symbol::{get_opposite_bracket, LexSym};
 
+static OP_PRIORITIES: &'static [&'static [LexSym]] = &[
+    &[LexSym::TsPlus],
+    &[LexSym::TsLess],
+    &[LexSym::TsTimes, LexSym::TsDivide, LexSym::TsModulo],
+    &[LexSym::TsPower],
+];
+
 fn parse_node_bracket(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     let mut opened_bracket = 0;
     let mut pos_r_bracket = 0;
@@ -21,7 +28,7 @@ fn parse_node_bracket(lexed: &[LexSym]) -> (Node, &[LexSym]) {
         pos_r_bracket += 1;
     }
 
-    let (content, _) = parse_expr(&lexed[1..pos_r_bracket]);
+    let (content, _) = parse_expr(OP_PRIORITIES, &lexed[1..pos_r_bracket]);
 
     return (content, &lexed[pos_r_bracket + 1..]);
 }
@@ -36,68 +43,38 @@ fn parse_node(lexed: &[LexSym]) -> (Node, &[LexSym]) {
     };
 }
 
-fn parse_power(lexed: &[LexSym]) -> (Node, &[LexSym]) {
-    let (left, mut lexed) = parse_node(lexed);
-
+fn parse_op<'a>(
+    lexed: &'a [LexSym],
+    left: Node,
+    ops: &'static [&'static [LexSym]],
+) -> (Node, &'a [LexSym]) {
     if lexed.len() == 0 {
         return (left, lexed);
     }
 
-    return match lexed[0] {
-        LexSym::TsPower => {
-            let op = lexed[0];
+    return if ops[0].iter().any(|op| *op == lexed[0]) {
+        let op = lexed[0];
 
-            lexed = &lexed[1..];
+        let (right, lexed) = parse_expr(ops, &lexed[1..]);
 
-            let (right, lexed) = parse_power(lexed);
+        let node = Node::Op(NodeOp::new(op, left, right));
 
-            let root = Node::Op(NodeOp::new(op, left, right));
-
-            (root, lexed)
-        }
-        _ => (left, lexed),
+        (node, lexed)
+    } else {
+        (left, lexed)
     };
 }
 
-fn parse_high_prior_op(lexed: &[LexSym]) -> (Node, &[LexSym]) {
-    let (left, mut lexed) = parse_power(lexed);
-
-    if lexed.len() == 0 {
-        return (left, lexed);
-    }
-
-    return match lexed[0] {
-        LexSym::TsTimes | LexSym::TsDivide | LexSym::TsModulo => {
-            let op = lexed[0];
-
-            lexed = &lexed[1..];
-
-            let (right, lexed) = parse_high_prior_op(lexed);
-
-            let root = Node::Op(NodeOp::new(op, left, right));
-
-            (root, lexed)
-        }
-        _ => (left, lexed),
+fn parse_expr<'a>(ops: &'static [&'static [LexSym]], lexed: &'a [LexSym]) -> (Node, &'a [LexSym]) {
+    let (left, lexed) = if ops.len() == 0 {
+        return parse_node(lexed);
+    } else {
+        parse_expr(&ops[1..], lexed)
     };
-}
 
-fn parse_expr(lexed: &[LexSym]) -> (Node, &[LexSym]) {
-    let (left, mut lexed) = parse_high_prior_op(lexed);
+    let (node, lexed) = parse_op(lexed, left, ops);
 
-    if lexed.len() == 0 {
-        return (left, lexed);
-    }
-
-    let op = lexed[0];
-
-    lexed = &lexed[1..];
-
-    let (right, lexed) = parse_expr(lexed);
-
-    let root = Node::Op(NodeOp::new(op, left, right));
-
-    return (root, lexed);
+    return (node, lexed);
 }
 
 fn clear_sub(node: Node, prev_is_less: bool) -> Node {
@@ -130,7 +107,7 @@ fn clear_sub(node: Node, prev_is_less: bool) -> Node {
 }
 
 pub fn parse(lexed: &Vec<LexSym>) -> Node {
-    let (parsed, _) = parse_expr(&lexed[..]);
+    let (parsed, _) = parse_expr(OP_PRIORITIES, &lexed[..]);
 
     return clear_sub(parsed, false);
 }

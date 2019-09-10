@@ -85,17 +85,14 @@ fn clear_sub(node: Node, prev_is_less: bool) -> Node {
             left,
             right,
         }) => {
-            return if prev_is_less {
-                let left = clear_sub(*left, false);
-                let right = clear_sub(*right, false);
+            let left = clear_sub(*left, true);
+            let right = clear_sub(*right, true);
 
+            return if prev_is_less {
                 Node::Op(NodeOp::new(LexSym::TsPlus, left, right))
             } else {
-                let left = clear_sub(*left, true);
-                let right = clear_sub(*right, true);
-
                 Node::Op(NodeOp::new(LexSym::TsLess, left, right))
-            }
+            };
         }
         Node::Op(NodeOp { op, left, right }) => {
             let left = clear_sub(*left, false);
